@@ -1,80 +1,556 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Mindmap Đơn Giản</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
-    }
-    .mindmap {
-      display: flex;
-      justify-content: center;
-      margin-top: 40px;
-    }
-    .node {
-      background: #fff;
-      border: 2px solid #4CAF50;
-      border-radius: 8px;
-      padding: 12px 18px;
-      margin: 10px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      position: relative;
-      min-width: 120px;
-    }
-    .children {
-      display: flex;
-      justify-content: center;
-      margin-top: 30px;
-    }
-    .line {
-      width: 2px;
-      height: 30px;
-      background: #4CAF50;
-      position: absolute;
-      left: 50%;
-      top: 100%;
-      transform: translateX(-50%);
-      z-index: 0;
-    }
-    /* Responsive */
-    @media (max-width: 600px) {
-      .children {
-        flex-direction: column;
-        align-items: center;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Tân Thủ - Hành trình NVPTTT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .mindmap-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: auto;
+        }
+
+        .mindmap {
+            position: relative;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        .central-node {
+            position: relative;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin: 50px auto;
+            max-width: 400px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .central-node:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .branches {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        .branch {
+            position: relative;
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        .node {
+            background: white;
+            border: 3px solid #4ECDC4;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border-color: #FF6B6B;
+        }
+
+        .node.level-1 {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .node.level-2 {
+            background: linear-gradient(45deg, #fd79a8, #e84393);
+            color: white;
+            font-size: 16px;
+            margin-left: 20px;
+        }
+
+        .node.level-3 {
+            background: linear-gradient(45deg, #fdcb6e, #e17055);
+            color: white;
+            font-size: 14px;
+            margin-left: 40px;
+        }
+
+        .node.level-4 {
+            background: linear-gradient(45deg, #a29bfe, #6c5ce7);
+            color: white;
+            font-size: 13px;
+            margin-left: 60px;
+        }
+
+        .node.collapsed .children {
+            display: none;
+        }
+
+        .node.expanded .children {
+            display: block;
+        }
+
+        .expand-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: rgba(255,255,255,0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .node.expanded .expand-icon {
+            transform: translateY(-50%) rotate(90deg);
+        }
+
+        .children {
+            margin-top: 10px;
+            padding-left: 20px;
+            border-left: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .connection-line {
+            position: absolute;
+            background: rgba(255,255,255,0.3);
+            height: 2px;
+            left: -20px;
+            top: 50%;
+            width: 20px;
+        }
+
+        .day-badge {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            background: #FF6B6B;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .status-published {
+            background: #00b894;
+            color: white;
+        }
+
+        .status-review {
+            background: #fdcb6e;
+            color: #2d3436;
+        }
+
+        .status-progress {
+            background: #74b9ff;
+            color: white;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            max-width: 300px;
+            z-index: 1000;
+            display: none;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .branches {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .branch {
+                width: 100%;
+                max-width: 350px;
+            }
+            
+            .central-node {
+                font-size: 20px;
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="mindmap">
-    <div class="node" style="font-weight:bold;">
-      Chủ đề chính
-      <div class="line"></div>
-      <div class="children">
-        <div class="node">
-          Nhánh 1
-          <div class="line"></div>
-          <div class="children">
-            <div class="node">Ý nhỏ 1.1</div>
-            <div class="node">Ý nhỏ 1.2</div>
-          </div>
+    <div class="mindmap-container">
+        <div class="mindmap">
+            <div class="central-node" onclick="toggleAllBranches()">
+                <h1>HÀNH TRÌNH "TÂN THỦ"</h1>
+                <p style="font-size: 14px; margin-top: 10px; opacity: 0.9;">
+                    Hành trình 30 ngày trở thành Chiến Binh GHN
+                </p>
+            </div>
+
+            <div class="branches" id="mainBranches">
+                <!-- Giai đoạn 1: Khởi động -->
+                <div class="branch">
+                    <div class="node level-1 expanded" onclick="toggleNode(this)">
+                        <div class="day-badge">1-2</div>
+                        <span class="expand-icon">▶</span>
+                        <strong>GIAI ĐOẠN 1: KHỞI ĐỘNG</strong>
+                        <p style="font-size: 12px; margin-top: 5px;">Làm quen với công việc và ứng dụng</p>
+                        
+                        <div class="children">
+                            <div class="node level-2 expanded" onclick="toggleNode(this); event.stopPropagation();">
+                                <div class="day-badge">1</div>
+                                <span class="expand-icon">▶</span>
+                                <div class="status-indicator status-published">Đã xuất bản</div>
+                                <strong>Ngày 1: Khởi động</strong>
+                                
+                                <div class="children">
+                                    <div class="node level-3" onmouseover="showTooltip(event, 'Hoàn thành bài kiểm tra về sử dụng App Driver để làm quen với ứng dụng cơ bản')" onmouseout="hideTooltip()">
+                                        <div class="connection-line"></div>
+                                        <strong>Làm quen với App Driver</strong>
+                                        <p>Bài kiểm tra sử dụng App Driver</p>
+                                    </div>
+                                    
+                                    <div class="node level-3" onmouseover="showTooltip(event, 'Tổng quan quy trình làm việc 4C và chuẩn bị công cụ cần thiết')" onmouseout="hideTooltip()">
+                                        <div class="connection-line"></div>
+                                        <strong>Trang bị vũ khí chiến đấu</strong>
+                                        <p>Checklist công cụ cần chuẩn bị</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="node level-2 expanded" onclick="toggleNode(this); event.stopPropagation();">
+                                <div class="day-badge">2</div>
+                                <span class="expand-icon">▶</span>
+                                <div class="status-indicator status-review">Đang review</div>
+                                <strong>Ngày 2: Chính sách & Phúc lợi</strong>
+                                
+                                <div class="children">
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Check in đúng giờ</strong>
+                                        <p>Thực hiện check in theo quy định</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Chính sách thu nhập</strong>
+                                        <p>Hiểu công thức tính lương và phụ cấp</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Lương đảm bảo</strong>
+                                        <p>Thao tác xem nhiệm vụ & lương đảm bảo</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Giai đoạn 2: Giao/Trả -->
+                <div class="branch">
+                    <div class="node level-1 expanded" onclick="toggleNode(this)">
+                        <div class="day-badge">3-9</div>
+                        <span class="expand-icon">▶</span>
+                        <strong>GIAI ĐOẠN 2: GIAO/TRẢ</strong>
+                        <p style="font-size: 12px; margin-top: 5px;">Học quy trình giao và trả hàng</p>
+                        
+                        <div class="children">
+                            <div class="node level-2 collapsed" onclick="toggleNode(this); event.stopPropagation();">
+                                <div class="day-badge">3</div>
+                                <span class="expand-icon">▶</span>
+                                <strong>Xếp đúng tuyến đường</strong>
+                                
+                                <div class="children">
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Sắp xếp tuyến giao</strong>
+                                        <p>Tối ưu thời gian giao hàng</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="node level-2 collapsed" onclick="toggleNode(this); event.stopPropagation();">
+                                <div class="day-badge">4</div>
+                                <span class="expand-icon">▶</span>
+                                <strong>Cập nhật đơn hàng + Call log</strong>
+                                
+                                <div class="children">
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Quy định cuộc gọi</strong>
+                                        <p>Thực hiện gọi điện đúng quy trình</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="node level-2 collapsed" onclick="toggleNode(this); event.stopPropagation();">
+                                <div class="day-badge">5-9</div>
+                                <span class="expand-icon">▶</span>
+                                <strong>POD & Xử lý đơn hàng</strong>
+                                
+                                <div class="children">
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>POD GTC</strong>
+                                        <p>Quy định POD giao thành công</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>POD GTB</strong>
+                                        <p>Quy định POD giao thất bại</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>GT1P</strong>
+                                        <p>Giao trả 1 phần</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Thái độ phục vụ</strong>
+                                        <p>Xây dựng mối quan hệ với KH</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Giai đoạn 3: Thủ tục & Kỹ năng -->
+                <div class="branch">
+                    <div class="node level-1 expanded" onclick="toggleNode(this)">
+                        <div class="day-badge">10-25</div>
+                        <span class="expand-icon">▶</span>
+                        <strong>GIAI ĐOẠN 3: KỸ NĂNG NÂNG CAO</strong>
+                        <p style="font-size: 12px; margin-top: 5px;">Thủ tục hành chính và kỹ năng chuyên môn</p>
+                        
+                        <div class="children">
+                            <div class="node level-2 collapsed" onclick="toggleNode(this); event.stopPropagation();">
+                                <div class="day-badge">10-11</div>
+                                <span class="expand-icon">▶</span>
+                                <div class="status-indicator status-progress">Đang thực hiện</div>
+                                <strong>Thủ tục hành chính</strong>
+                                
+                                <div class="children">
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Liên kết Telegram</strong>
+                                        <p>Kết nối tài khoản SSO</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Quy trình xin nghỉ phép</strong>
+                                        <p>Thực hiện nghỉ phép đúng quy định</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="node level-2 collapsed" onclick="toggleNode(this); event.stopPropagation();">
+                                <div class="day-badge">12-25</div>
+                                <span class="expand-icon">▶</span>
+                                <strong>Bí kíp tăng hiệu quả</strong>
+                                
+                                <div class="children">
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Tăng tỷ lệ GTC</strong>
+                                        <p>Mẹo để tăng giao thành công</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Hệ thống QLCL</strong>
+                                        <p>Xử lý phiếu phạt</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Lấy hàng chuyên nghiệp</strong>
+                                        <p>Quy trình lấy hàng chuẩn</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Giai đoạn 4: Bán hàng -->
+                <div class="branch">
+                    <div class="node level-1 expanded" onclick="toggleNode(this)">
+                        <div class="day-badge">34-60</div>
+                        <span class="expand-icon">▶</span>
+                        <strong>GIAI ĐOẠN 4: BÁN HÀNG</strong>
+                        <p style="font-size: 12px; margin-top: 5px;">Phát triển kỹ năng kinh doanh</p>
+                        
+                        <div class="children">
+                            <div class="node level-2 collapsed" onclick="toggleNode(this); event.stopPropagation();">
+                                <div class="day-badge">34-36</div>
+                                <span class="expand-icon">▶</span>
+                                <strong>Tầm quan trọng bán hàng</strong>
+                                
+                                <div class="children">
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Vì sao phải bán hàng?</strong>
+                                        <p>Tạo động lực tham gia bán hàng</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>Chính sách thu nhập</strong>
+                                        <p>So sánh NV giao vs NV bán hàng</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="node level-2 collapsed" onclick="toggleNode(this); event.stopPropagation();">
+                                <div class="day-badge">37-47</div>
+                                <span class="expand-icon">▶</span>
+                                <strong>Quy trình 5T</strong>
+                                
+                                <div class="children">
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>T1: Thu thập</strong>
+                                        <p>Thu thập thông tin KH</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>T2: Tiếp cận</strong>
+                                        <p>Phương pháp tiếp cận KH</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>T3: Thấu hiểu</strong>
+                                        <p>Xây dựng mối quan hệ</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>T4: Tư vấn</strong>
+                                        <p>Bí kíp chốt deal thành công</p>
+                                    </div>
+                                    
+                                    <div class="node level-3">
+                                        <div class="connection-line"></div>
+                                        <strong>T5: Tận tâm</strong>
+                                        <p>Chăm sóc và giữ chân KH</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="node">
-          Nhánh 2
-          <div class="line"></div>
-          <div class="children">
-            <div class="node">Ý nhỏ 2.1</div>
-            <div class="node">Ý nhỏ 2.2</div>
-          </div>
-        </div>
-        <div class="node">
-          Nhánh 3
-        </div>
-      </div>
     </div>
-  </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        function toggleNode(element) {
+            const isExpanded = element.classList.contains('expanded');
+            
+            if (isExpanded) {
+                element.classList.remove('expanded');
+                element.classList.add('collapsed');
+            } else {
+                element.classList.remove('collapsed');
+                element.classList.add('expanded');
+            }
+        }
+
+        function toggleAllBranches() {
+            const branches = document.querySelectorAll('.branch .node.level-1');
+            const allExpanded = Array.from(branches).every(branch => branch.classList.contains('expanded'));
+            
+            branches.forEach(branch => {
+                if (allExpanded) {
+                    branch.classList.remove('expanded');
+                    branch.classList.add('collapsed');
+                } else {
+                    branch.classList.remove('collapsed');
+                    branch.classList.add('expanded');
+                }
+            });
+        }
+
+        function showTooltip(event, text) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = text;
+            tooltip.style.display = 'block';
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY + 10 + 'px';
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.style.display = 'none';
+        }
+
+        // Khởi tạo trạng thái ban đầu
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mở rộng một số nhánh chính để demo
+            const mainBranches = document.querySelectorAll('.branch .node.level-1');
+            mainBranches.forEach((branch, index) => {
+                if (index < 2) {
+                    branch.classList.add('expanded');
+                    branch.classList.remove('collapsed');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
