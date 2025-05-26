@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Mindmap Đơn Giản</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+    }
+    .mindmap {
+      display: flex;
+      justify-content: center;
+      margin-top: 40px;
+    }
+    .node {
+      background: #fff;
+      border: 2px solid #4CAF50;
+      border-radius: 8px;
+      padding: 12px 18px;
+      margin: 10px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      position: relative;
+      min-width: 120px;
+    }
+    .children {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+    }
+    .line {
+      width: 2px;
+      height: 30px;
+      background: #4CAF50;
+      position: absolute;
+      left: 50%;
+      top: 100%;
+      transform: translateX(-50%);
+      z-index: 0;
+    }
+    /* Responsive */
+    @media (max-width: 600px) {
+      .children {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="mindmap">
+    <div class="node" style="font-weight:bold;">
+      Chủ đề chính
+      <div class="line"></div>
+      <div class="children">
+        <div class="node">
+          Nhánh 1
+          <div class="line"></div>
+          <div class="children">
+            <div class="node">Ý nhỏ 1.1</div>
+            <div class="node">Ý nhỏ 1.2</div>
+          </div>
+        </div>
+        <div class="node">
+          Nhánh 2
+          <div class="line"></div>
+          <div class="children">
+            <div class="node">Ý nhỏ 2.1</div>
+            <div class="node">Ý nhỏ 2.2</div>
+          </div>
+        </div>
+        <div class="node">
+          Nhánh 3
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
